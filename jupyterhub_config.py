@@ -8,6 +8,7 @@ pwd = os.path.dirname(__file__)
 c = get_config()
 hub_name = os.environ['HUB_NAME']
 
+c.JupyterHub.logo_file = '/srv/jupyterhub/logo.png'
 # Spawner dropdown menu?
 enable_options=False
 
@@ -71,7 +72,7 @@ spawn_cmd = os.environ.get('DOCKER_SPAWN_CMD', "start-singleuser.sh")
 c.DockerSpawner.extra_create_kwargs.update({ 'command': spawn_cmd })
 
 # Memory limit
-# c.Spawner.mem_limit = '2G'  # RAM limit
+c.Spawner.mem_limit = '1250M'  # RAM limit
 #c.Spawner.cpu_limit = 0.1
 
 # Connect containers to this Docker network
@@ -91,8 +92,7 @@ c.DockerSpawner.notebook_dir = notebook_dir
 # notebook directory in the container
 
 c.DockerSpawner.volumes = { 'hub-user-{username}': notebook_dir, 
-                            'rw_shared_volume':{"bind": '/home/jovyan/shared_volume_rw', "mode": "rw", "propagation": "rshared"},
-                            '/home/math/':'/home/jovyan/math-home-public/' } 
+				}
 
 # volume_driver is no longer a keyword argument to create_container()
 # c.DockerSpawner.extra_create_kwargs.update({ 'volume_driver': 'local' })
@@ -104,8 +104,22 @@ c.DockerSpawner.debug = True
 # User containers will access hub by container name on the Docker network
 c.JupyterHub.hub_ip = hub_name
 # The hub will be hosted at example.com/HUB_NAME/ 
-c.JupyterHub.base_url = u'/%s/'%hub_name
+#c.JupyterHub.base_url = u'/%s/'%hub_name
 #c.JupyterHub.hub_port = 8001
+
+## The URL the single-user server should start in.
+#
+#  `{username}` will be expanded to the user's username
+#
+#  Example uses:
+#
+#  - You can set `notebook_dir` to `/` and `default_url` to `/tree/home/{username}` to allow people to
+#    navigate the whole filesystem from their notebook server, but still start in their home directory.
+#  - Start with `/notebooks` instead of `/tree` if `default_url` points to a notebook instead of a directory.
+#  - You can set this to `/lab` to have JupyterLab start by default, rather than Jupyter Notebook.
+c.Spawner.default_url = '/lab'
+
+
 
 ## Authentication 
 # Whitlelist users and admins
@@ -125,19 +139,19 @@ with open(os.path.join(pwd, 'userlist')) as f:
 
 
 # Authenticate users with GitHub OAuth
-# c.JupyterHub.authenticator_class = 'oauthenticator.GitHubOAuthenticator'
-# c.GitHubOAuthenticator.oauth_callback_url = os.environ['OAUTH_CALLBACK_URL']
+c.JupyterHub.authenticator_class = 'oauthenticator.GitHubOAuthenticator'
+c.GitHubOAuthenticator.oauth_callback_url = os.environ['OAUTH_CALLBACK_URL']
 
 # Authenticate with thedataincubator/jupyterhub-hashauthenticator
-c.JupyterHub.authenticator_class = 'hashauthenticator.HashAuthenticator'
+##c.JupyterHub.authenticator_class = 'hashauthenticator.HashAuthenticator'
 # You can generate a good "secret key" by running `openssl rand -hex 32` in terminal.
 # it is recommended to do this from time-to-time to change passwords (including changing their length)
-c.HashAuthenticator.secret_key = os.environ['HASH_SECRET_KEY']  # Defaults to ''
-c.HashAuthenticator.password_length = int(os.environ['PASSWORD_LENGTH'])          # Defaults to 6
+##c.HashAuthenticator.secret_key = os.environ['HASH_SECRET_KEY']  # Defaults to ''
+##c.HashAuthenticator.password_length = int(os.environ['PASSWORD_LENGTH'])          # Defaults to 6
 # Can find your password by looking at `hashauthpw --length 10 [username] [key]`
 # If the `show_logins` option is set to `True`, a CSV file containing 
 #login names and passwords will be served (to admins only) at `/hub/login_list`. 
-c.HashAuthenticator.show_logins = True            # Optional, defaults to False
+##c.HashAuthenticator.show_logins = True            # Optional, defaults to False
 
 # TLS config
 #c.JupyterHub.port = 8000
@@ -161,10 +175,10 @@ c.JupyterHub.db_url = 'postgresql://postgres:{password}@{host}/{db}'.format(
 c.JupyterHub.admin_access = True 
 
 # Run script to automatically stop idle single-user servers as a jupyterhub service.
-c.JupyterHub.services = [
-    {
-        'name': 'cull_idle',
-        'admin': True,
-        'command': 'python /srv/jupyterhub/cull_idle_servers.py --timeout=3600'.split(),
-    },
-]
+#c.JupyterHub.services = [
+#    {
+#        'name': 'cull_idle',
+#        'admin': True,
+#        'command': 'python /srv/jupyterhub/cull_idle_servers.py --timeout=3600'.split(),
+#    },
+#]
