@@ -38,12 +38,15 @@ class MyDockerSpawner(DockerSpawner):
     def start(self):
         if self.user.name in self.group_map:
             group_list = self.group_map[self.user.name]
+            self.volumes['/tmp/.X11-unix'] = { 'bind': '/tmp/.X11-unix'}
             # add team volume to volumes
             for group_id in group_list:
                 self.volumes['shared-{}'.format(group_id)] = {
                     'bind': '/home/jovyan/%s'%(group_id),
                     'mode': 'rw',  # or ro for read-only
                     }
+        self.volumes['/home/mathematicalmichael/.Xauthority'] = { 'bind': '/root/.Xauthority', 
+	                                                          'mode': 'rw'}
         return super().start()
 
 c.JupyterHub.spawner_class = MyDockerSpawner
@@ -117,7 +120,7 @@ c.JupyterHub.hub_ip = hub_name
 #    navigate the whole filesystem from their notebook server, but still start in their home directory.
 #  - Start with `/notebooks` instead of `/tree` if `default_url` points to a notebook instead of a directory.
 #  - You can set this to `/lab` to have JupyterLab start by default, rather than Jupyter Notebook.
-c.Spawner.default_url = '/lab'
+#c.Spawner.default_url = '/lab/'
 
 
 

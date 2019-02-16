@@ -17,8 +17,10 @@ RUN apt-get update && \
 
 USER jovyan
 
-RUN python3 -m pip install --no-cache jupyterhub==$JUPYTERHUB_VERSION nbresuse
-RUN conda install -c conda-forge fenics
+RUN python3 -m pip install --no-cache jupyterhub==$JUPYTERHUB_VERSION nbresuse && \
+    jupyter labextension install jupyterlab-topbar-extension && \ 
+    jupyter labextension install jupyterlab-system-monitor
+#RUN conda install fenics
 
 RUN python3 -m pip install ipyparallel
 RUN ipython profile create --parallel --profile=mpi
@@ -45,7 +47,7 @@ RUN apt-get update && \
         ;
 
 # You can use rsession from rstudio's desktop package as well.
-ENV RSTUDIO_PKG=rstudio-server-1.0.136-amd64.deb
+ENV RSTUDIO_PKG=rstudio-server-1.1.463-amd64.deb
 
 RUN wget -q http://download2.rstudio.org/${RSTUDIO_PKG}
 RUN dpkg -i ${RSTUDIO_PKG}
@@ -64,4 +66,5 @@ ENV LD_LIBRARY_PATH="/usr/lib/R/lib:/lib:/usr/lib/jvm/java-7-openjdk-amd64/jre/l
 #ENV LD_LIBRARY_PATH="/usr/lib/R/lib:/lib:/usr/lib/x86_64-linux-gnu:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/server:/opt/conda/lib/R/lib"
 
 USER jovyan
-RUN echo "source /home/jovyan/work/.bash_custom" >> /home/jovyan/.bashrc
+RUN echo ". /home/jovyan/work/.bash_custom" >> /home/jovyan/.bashrc
+RUN echo "export EDITOR=/usr/bin/vim" >> /home/jovyan/.bashrc
