@@ -1,5 +1,6 @@
 # Copyright (c) Jupyter Development Team.
 # Distributed under the terms of the Modified BSD License.
+# Major edits by MathematicalMichael(.com) 02-2019
 
 # Configuration file for JupyterHub
 import os
@@ -40,13 +41,23 @@ class MyDockerSpawner(DockerSpawner):
             group_list = self.group_map[self.user.name]
             self.volumes['/tmp/.X11-unix'] = { 'bind': '/tmp/.X11-unix'}
             # add team volume to volumes
-            for group_id in group_list:
-                self.volumes['shared-{}'.format(group_id)] = {
-                    'bind': '/home/jovyan/%s'%(group_id),
-                    'mode': 'rw',  # or ro for read-only
-                    }
-        self.volumes['/home/mathematicalmichael/.Xauthority'] = { 'bind': '/root/.Xauthority', 
-	                                                          'mode': 'rw'}
+            for group_id in group_list: # one superuser gets upload rights.
+                if self.user.name == 'hub-admin': 
+                    self.volumes['shared-{}'.format(group_id)] = {
+                        'bind': '/home/jovyan/%s'%(group_id),
+                        'mode': 'rw',  # or ro for read-only
+                        }
+                else: # this "shared-" is part of the naming convention
+                    self.volumes['shared-{}'.format(group_id)] = {
+                        'bind': '/home/jovyan/%s'%(group_id),
+                        'mode': 'ro', 
+                        }
+        self.volumes['/home/mathematicalmichael/.Xauthority'] = { 'bind': '/root/.Xauthority', 'mode': 'rw'}
+        if self.user.name == 'hub-admin': # if admin, allow userlist access
+            self.volumes['%s/userlist'%(os.environ['HUB_LOC'])] = { 'bind': '/home/jovyan/userlist',
+                                                            'mode': 'rw' }
+            self.volumes['%s/jupyterhub_config.py'%(os.environ['HUB_LOC'])] = { 'bind': '/home/jovyan/jupyterhub_config.py',
+                                                            'mode': 'rw' }
         return super().start()
 
 c.JupyterHub.spawner_class = MyDockerSpawner
@@ -94,8 +105,7 @@ c.DockerSpawner.notebook_dir = notebook_dir
 # Mount the real user's Docker volume on the host to the notebook user's
 # notebook directory in the container
 
-c.DockerSpawner.volumes = { 'hub-user-{username}': notebook_dir, 
-				}
+c.DockerSpawner.volumes = { 'hub-user-{username}': notebook_dir }
 
 # volume_driver is no longer a keyword argument to create_container()
 # c.DockerSpawner.extra_create_kwargs.update({ 'volume_driver': 'local' })
@@ -128,6 +138,10 @@ c.JupyterHub.hub_ip = hub_name
 # Whitlelist users and admins
 c.Authenticator.whitelist = whitelist = set()
 c.Authenticator.admin_users = admin = set()
+
+# add default user so that first-time log in is easy.
+admin.add('hub-admin')
+
 with open(os.path.join(pwd, 'userlist')) as f:
     for line in f:
         if not line:
