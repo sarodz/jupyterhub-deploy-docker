@@ -44,8 +44,6 @@ $CONDA_DIR/envs/python2/bin/kernda -o -y /usr/local/share/jupyter/kernels/python
 USER $NB_UID
 # Jupyterhub and memory monitoring
 RUN python3 -m pip install --no-cache jupyterhub==$JUPYTERHUB_VERSION nbresuse && \
-    jupyter labextension install jupyterlab-topbar-extension && \
-    jupyter labextension install jupyterlab-system-monitor && \
     npm cache clean --force && \
     rm -rf $CONDA_DIR/share/jupyter/lab/staging && \
     rm -rf /home/$NB_USER/.cache/yarn && \
