@@ -40,6 +40,13 @@ class MyDockerSpawner(DockerSpawner):
             group_list = self.group_map[self.user.name]
             self.volumes['/tmp/.X11-unix'] = { 'bind': '/tmp/.X11-unix'}
             # add team volume to volumes
+            if self.user.name == 'mathematicalmichael':
+                self.volumes['/var/www/mm/'] = {'bind': '/home/jovyan/mm', 'mode': 'rw' }
+                self.volumes['/var/www/mp/'] = {'bind': '/home/jovyan/mp', 'mode': 'rw' }
+                self.volumes['/var/www/biz/'] = {'bind': '/home/jovyan/biz', 'mode': 'rw' }
+                
+            if self.user.name == 'ronbailie':
+                self.volumes['/var/www/ron/'] = {'bind': '/home/jovyan/ron', 'mode': 'rw' }
             for group_id in group_list: # admins in userlist get to write files.
                 if group_id != 'admin':
                     if 'admin' in group_list: 

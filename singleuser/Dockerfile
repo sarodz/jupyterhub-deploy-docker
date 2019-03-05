@@ -88,3 +88,13 @@ USER jovyan
 RUN echo ". /home/jovyan/work/.bash_custom" >> /home/jovyan/.bashrc
 RUN echo "export EDITOR=/usr/bin/vim" >> /home/jovyan/.bashrc
 RUN pip install td-watson
+
+# HUGO
+USER root
+ENV HUGO_VER=0.52
+RUN wget https://github.com/gohugoio/hugo/releases/download/v${HUGO_VER}/hugo_${HUGO_VER}_Linux-64bit.deb
+RUN dpkg -i hugo*.deb
+RUN rm hugo*.deb 
+
+USER jovyan
+
