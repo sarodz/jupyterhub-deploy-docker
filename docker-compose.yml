@@ -42,9 +42,9 @@ services:
     links:
       - hub-db
     environment:
-      #HUB_NAME: ${HUB_NAME}
+      HUB_NAME: ${HUB_NAME}
       # Notebook directory inside user image
-      #DOCKER_NOTEBOOK_DIR: ${DOCKER_NOTEBOOK_DIR}
+      DOCKER_NOTEBOOK_DIR: ${DOCKER_NOTEBOOK_DIR}
       # Using this run command (optional)
       #DOCKER_SPAWN_CMD: ${DOCKER_SPAWN_CMD}
       # Postgres db info

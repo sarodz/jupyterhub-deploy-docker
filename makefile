@@ -53,7 +53,7 @@ pull:
 
 notebook_image: pull singleuser/Dockerfile
 	docker build -t $(HUB_NAME)-user:latest \
-	    --build-arg JUPYTER_ENABLE_LAB=$(JUPYTER_ENABLE_LAB) \
+		--build-arg JUPYTER_ENABLE_LAB=$(JUPYTER_ENABLE_LAB) \
 		--build-arg JUPYTERHUB_VERSION=$(JUPYTERHUB_VERSION) \
 		--build-arg DOCKER_NOTEBOOK_IMAGE=$(DOCKER_NOTEBOOK_IMAGE) \
 		singleuser
