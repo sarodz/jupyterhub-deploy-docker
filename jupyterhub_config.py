@@ -111,7 +111,7 @@ c.DockerSpawner.extra_host_config = { 'network_mode': network_name }
 # We follow the same convention.
 #notebook_dir = os.environ.get('DOCKER_NOTEBOOK_DIR') or '/home/jovyan/work'
 notebook_dir = '/home/jovyan/work'
-c.DockerSpawner.notebook_dir = notebook_dir
+c.DockerSpawner.notebook_dir = '/home/jovyan'
 # Mount the real user's Docker volume on the host to the notebook user's
 # notebook directory in the container
 
