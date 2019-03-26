@@ -56,7 +56,7 @@ class MyDockerSpawner(DockerSpawner):
                     else: # this "shared-" is part of the naming convention
                         self.volumes['shared-{}'.format(group_id)] = \
                             {'bind': '/home/jovyan/%s'%(group_id),
-                                'mode': 'ro' } # or rw for write (can cause conflicts)
+                                'mode': 'rw' } # or rw for write (can cause conflicts)
                 else: # if admin is one of the groups in userlist, mount the following:
                     self.volumes['%s/userlist'%(os.environ['HUB_LOC'])] = \
                         { 'bind': '/home/jovyan/userlist', 'mode': 'rw' }
@@ -89,8 +89,10 @@ if enable_options:
 # jupyter/docker-stacks *-notebook images as the Docker run command when
 # spawning containers.  Optionally, you can override the Docker run command
 # using the DOCKER_SPAWN_CMD environment variable.
-spawn_cmd = os.environ.get('DOCKER_SPAWN_CMD', "start-singleuser.sh")
-c.DockerSpawner.extra_create_kwargs.update({ 'command': spawn_cmd })
+#spawn_cmd = os.environ.get('DOCKER_SPAWN_CMD', "start-singleuser.sh")
+#c.DockerSpawner.extra_create_kwargs.update({ 'command': spawn_cmd })
+
+#c.Spawner.cmd = ['jupyter-labhub']
 
 # Memory limit
 c.Spawner.mem_limit = '1250M'  # RAM limit
@@ -118,6 +120,7 @@ c.DockerSpawner.volumes = { 'hub-user-{username}': notebook_dir }
 # c.DockerSpawner.extra_create_kwargs.update({ 'volume_driver': 'local' })
 # Remove containers once they are stopped
 c.DockerSpawner.remove_containers = True
+
 # For debugging arguments passed to spawned containers
 c.DockerSpawner.debug = True
 
@@ -137,8 +140,8 @@ c.JupyterHub.hub_ip = hub_name
 #    navigate the whole filesystem from their notebook server, but still start in their home directory.
 #  - Start with `/notebooks` instead of `/tree` if `default_url` points to a notebook instead of a directory.
 #  - You can set this to `/lab` to have JupyterLab start by default, rather than Jupyter Notebook.
-c.Spawner.default_url = '/lab/'
-
+#c.Spawner.default_url = '/user/{username}/lab/'
+#c.Spawner.default_url = '/notebooks/examples/Untitled.ipynb'
 
 
 ## Authentication 

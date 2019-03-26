@@ -1,9 +1,11 @@
 ARG DOCKER_NOTEBOOK_IMAGE
+ARG JUPYTERHUB_VERSION
+ARG JUPYTER_ENABLE_LAB
 ARG DISPLAY
 FROM $DOCKER_NOTEBOOK_IMAGE
-ARG JUPYTERHUB_VERSION
 #any additional installations go here.
-RUN export DISPLAY=$DISPLAY
+ENV DISPLAY=$DISPLAY
+ENV JUPYTER_ENABLE_LAB=yes
 
 USER root
 
@@ -31,7 +33,7 @@ RUN ipython profile create --parallel --profile=default
 RUN echo "c.IPClusterEngines.engine_launcher_class = 'MPIEngineSetLauncher'" >> /home/jovyan/.ipython/profile_mpi/ipcluster_config.py
 
 # Python 2 environment
-RUN conda create --quiet --yes -p $CONDA_DIR/envs/python2 python=2.7 ipython ipykernel kernda numpy pandas matplotlib ipywidgets yaml ipyparallel mpi4py scipy pyDOE
+RUN conda create --quiet --yes -p $CONDA_DIR/envs/python2 python=2.7 pip ipython ipykernel kernda numpy pandas matplotlib ipywidgets yaml ipyparallel mpi4py scipy pyDOE 
 RUN /opt/conda/envs/python2/bin/ipython profile create --parallel --profile=mpi
 RUN /opt/conda/envs/python2/bin/ipython profile create --parallel --profile=default
 
@@ -44,6 +46,8 @@ $CONDA_DIR/envs/python2/bin/kernda -o -y /usr/local/share/jupyter/kernels/python
 USER $NB_UID
 # Jupyterhub and memory monitoring
 RUN python3 -m pip install --no-cache jupyterhub==$JUPYTERHUB_VERSION nbresuse && \
+    jupyter labextension install jupyterlab-topbar-extension && \
+    jupyter labextension install jupyterlab-system-monitor && \
     npm cache clean --force && \
     rm -rf $CONDA_DIR/share/jupyter/lab/staging && \
     rm -rf /home/$NB_USER/.cache/yarn && \
@@ -97,4 +101,7 @@ RUN dpkg -i hugo*.deb
 RUN rm hugo*.deb 
 
 USER jovyan
-
+# Python 3.6 environment
+RUN conda create --quiet --yes -n py3 python=3.6 pip ipython ipykernel kernda numpy ipywidgets
+RUN /opt/conda/envs/py3/bin/pip install vpython==7.4.0
+RUN /opt/conda/envs/py3/bin/python -m ipykernel install --user --name myenv --display-name "Python3.6"
