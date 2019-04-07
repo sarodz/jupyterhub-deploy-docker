@@ -106,3 +106,4 @@ USER jovyan
 RUN conda create --quiet --yes -n py3 python=3.6 pip ipython ipykernel kernda numpy ipywidgets
 RUN /opt/conda/envs/py3/bin/pip install vpython==7.4.0
 RUN /opt/conda/envs/py3/bin/python -m ipykernel install --user --name myenv --display-name "Python3.6"
+
