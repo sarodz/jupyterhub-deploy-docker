@@ -21,44 +21,44 @@ enable_options=False
 # Spawn single-user servers as Docker containers
 #c.JupyterHub.spawner_class = spawner = 'dockerspawner.DockerSpawner'
 from dockerspawner import DockerSpawner
-class MyDockerSpawner(DockerSpawner):
-    group_map = {}
-    with open(os.path.join(pwd, 'userlist')) as f:
-        for line in f:
-            if not line:
-                continue
-            parts = line.split()
-            # in case of newline at the end of userlist file
-            if len(parts) >= 1:
-                user_name = parts[0]
-                group_map[user_name] = []
-
-                for i in range(1,len(parts)):
-                    group_id = parts.pop()
-                    group_map[user_name].append(group_id)
-    def start(self):
-        if self.user.name in self.group_map:
-            group_list = self.group_map[self.user.name]
-            # add team volume to volumes
-            for group_id in group_list: # admins in userlist get to write files.
-                if group_id != 'admin':
-                    if 'admin' in group_list: 
-                        self.volumes['shared-{}'.format(group_id)] = \
-                            { 'bind': '/home/jovyan/%s'%(group_id),
-                                'mode': 'rw' } # or ro for read-only
-                    else: # this "shared-" is part of the naming convention
-                        self.volumes['shared-{}'.format(group_id)] = \
-                            {'bind': '/home/jovyan/%s'%(group_id),
-                                'mode': 'ro' } # or rw for write (can cause conflicts)
-                else: # if admin is one of the groups in userlist, mount the following:
-                    self.volumes['%s/userlist'%(os.environ['HUB_LOC'])] = \
-                        { 'bind': '/home/jovyan/userlist', 'mode': 'rw' }
-                    self.volumes['%s/jupyterhub_config.py'%(os.environ['HUB_LOC'])] = \
-                        { 'bind': '/home/jovyan/jupyterhub_config.py', 'mode': 'rw' }
-        self.environment['JUPYTER_ENABLE_LAB'] = 'yes'
-        return super().start()
-
-c.JupyterHub.spawner_class = MyDockerSpawner
+#class MyDockerSpawner(DockerSpawner):
+#    group_map = {}
+#    with open(os.path.join(pwd, 'userlist')) as f:
+#        for line in f:
+#            if not line:
+#                continue
+#            parts = line.split()
+#            # in case of newline at the end of userlist file
+#            if len(parts) >= 1:
+#                user_name = parts[0]
+#                group_map[user_name] = []
+#
+#                for i in range(1,len(parts)):
+#                    group_id = parts.pop()
+#                    group_map[user_name].append(group_id)
+#    def start(self):
+#        if self.user.name in self.group_map:
+#            group_list = self.group_map[self.user.name]
+#            # add team volume to volumes
+#            for group_id in group_list: # admins in userlist get to write files.
+#                if group_id != 'admin':
+#                    if 'admin' in group_list: 
+#                        self.volumes['shared-{}'.format(group_id)] = \
+#                            { 'bind': '/home/jovyan/%s'%(group_id),
+#                                'mode': 'rw' } # or ro for read-only
+#                    else: # this "shared-" is part of the naming convention
+#                        self.volumes['shared-{}'.format(group_id)] = \
+#                            {'bind': '/home/jovyan/%s'%(group_id),
+#                                'mode': 'ro' } # or rw for write (can cause conflicts)
+#                else: # if admin is one of the groups in userlist, mount the following:
+#                    self.volumes['%s/userlist'%(os.environ['HUB_LOC'])] = \
+#                        { 'bind': '/home/jovyan/userlist', 'mode': 'rw' }
+#                    self.volumes['%s/jupyterhub_config.py'%(os.environ['HUB_LOC'])] = \
+#                        { 'bind': '/home/jovyan/jupyterhub_config.py', 'mode': 'rw' }
+#        self.environment['JUPYTER_ENABLE_LAB'] = 'yes'
+#        return super().start()
+#
+c.JupyterHub.spawner_class = DockerSpawner
 
 # define some task to do on startup
 
@@ -101,7 +101,8 @@ c.DockerSpawner.extra_host_config = { 'network_mode': network_name }
 # user `jovyan`, and set the notebook directory to `/home/jovyan/work`.
 # We follow the same convention.
 notebook_dir = os.environ.get('DOCKER_NOTEBOOK_DIR') or '/home/jovyan/work'
-#c.DockerSpawner.notebook_dir = notebook_dir
+c.DockerSpawner.notebook_dir = '/home/jovyan/work'
+c.NotebookApp.notebook_dir = '/home/jovyan/work'
 # Mount the real user's Docker volume on the host to the notebook user's
 # notebook directory in the container
 c.DockerSpawner.volumes = { 'hub-user-{username}': notebook_dir }
@@ -174,7 +175,7 @@ c.JupyterHub.db_url = 'postgresql://postgres:{password}@{host}/{db}'.format(
 )
 
 # Allow admin users to log into other single-user servers (e.g. for debugging, testing)?  As a courtesy, you should make sure your users know if admin_access is enabled.
-c.JupyterHub.admin_access = False
+c.JupyterHub.admin_access = True
 
 ## Allow named single-user servers per user
 c.JupyterHub.allow_named_servers = False

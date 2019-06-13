@@ -59,4 +59,5 @@ RUN jupyter labextension install @jupyterlab/git && \
 # USER SETTINGS
 USER jovyan
 RUN echo "export EDITOR=/usr/bin/vim" >> /home/jovyan/.bashrc
-ENV JUPYTER_ENABLE_LAB=yes
+ENV JUPYTER_ENABLE_LAB=no
+COPY jupyter_notebook_config.py /home/jovyan/.jupyter/jupyter_notebook_config.py
