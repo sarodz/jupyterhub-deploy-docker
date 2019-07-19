@@ -44,9 +44,15 @@ class MyDockerSpawner(DockerSpawner):
                 self.volumes['/var/www/mm/'] = {'bind': '/home/jovyan/mm', 'mode': 'rw' }
                 self.volumes['/var/www/mp/'] = {'bind': '/home/jovyan/mp', 'mode': 'rw' }
                 self.volumes['/var/www/biz/'] = {'bind': '/home/jovyan/biz', 'mode': 'rw' }
+                self.volumes['/var/www/dev/'] = {'bind': '/home/jovyan/dev', 'mode': 'rw' }
+            if self.user.name == 'elliottregan':
+                self.volumes['/var/www/dev/'] = {'bind': '/home/jovyan/dev', 'mode': 'rw' }
                 
+            if self.user.name == 'kellyhodges':
+                self.default_url = "notebooks/kelly/arrow.ipynb"        
             if self.user.name == 'ronbailie':
                 self.volumes['/var/www/ron/'] = {'bind': '/home/jovyan/ron', 'mode': 'rw' }
+            
             for group_id in group_list: # admins in userlist get to write files.
                 if group_id != 'admin':
                     if 'admin' in group_list: 
@@ -65,6 +71,7 @@ class MyDockerSpawner(DockerSpawner):
         #self.volumes["/tmp/.X11-unix"] = {'bind': '/tmp/.X11-unix', 'mode': 'rw'}
         #self.volumes["/home/pilosovm/.Xauthority"] = {'bind': '/root/.Xauthority', 'mode': 'rw'}
         self.volumes['/home/mathematicalmichael/.Xauthority'] = { 'bind': '/root/.Xauthority', 'mode': 'rw'}
+        
         return super().start()
 
 c.JupyterHub.spawner_class = MyDockerSpawner
@@ -141,7 +148,7 @@ c.JupyterHub.hub_ip = hub_name
 #    navigate the whole filesystem from their notebook server, but still start in their home directory.
 #  - Start with `/notebooks` instead of `/tree` if `default_url` points to a notebook instead of a directory.
 #  - You can set this to `/lab` to have JupyterLab start by default, rather than Jupyter Notebook.
-#c.Spawner.default_url = '/user/{username}/lab/'
+#c.Spawner.default_url = '/user/{username}/tree'
 #c.Spawner.default_url = '/notebooks/examples/Untitled.ipynb'
 
 

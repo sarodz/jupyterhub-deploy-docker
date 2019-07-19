@@ -3,8 +3,6 @@ FROM $DOCKER_NOTEBOOK_IMAGE
 #any additional installations go here.
 ARG DISPLAY
 ENV DISPLAY=$DISPLAY
-ARG JUPYTER_ENABLE_LAB
-ENV JUPYTER_ENABLE_LAB=$JUPYTER_ENABLE_LAB
 ARG JUPYTERHUB_VERSION
 ENV JUPYTERHUB_VERSION=$JUPYTERHUB_VERSION
 
@@ -28,21 +26,21 @@ RUN conda update --all
 RUN conda install fenics
 
 # If you do not need parallelism, delete the following. 
-RUN python3 -m pip install ipyparallel mpi4py
-RUN ipython profile create --parallel --profile=mpi
-RUN ipython profile create --parallel --profile=default
-RUN echo "c.IPClusterEngines.engine_launcher_class = 'MPIEngineSetLauncher'" >> /home/jovyan/.ipython/profile_mpi/ipcluster_config.py
+# RUN python3 -m pip install ipyparallel mpi4py
+# RUN ipython profile create --parallel --profile=mpi
+# RUN ipython profile create --parallel --profile=default
+# RUN echo "c.IPClusterEngines.engine_launcher_class = 'MPIEngineSetLauncher'" >> /home/jovyan/.ipython/profile_mpi/ipcluster_config.py
 
 # Python 2 environment
-RUN conda create --quiet --yes -p $CONDA_DIR/envs/python2 python=2.7 pip ipython ipykernel kernda numpy pandas matplotlib ipywidgets yaml ipyparallel mpi4py scipy pyDOE 
-RUN /opt/conda/envs/python2/bin/ipython profile create --parallel --profile=mpi
-RUN /opt/conda/envs/python2/bin/ipython profile create --parallel --profile=default
+# RUN conda create --quiet --yes -p $CONDA_DIR/envs/python2 python=2.7 pip ipython ipykernel kernda numpy pandas matplotlib ipywidgets yaml ipyparallel mpi4py scipy pyDOE 
+# RUN /opt/conda/envs/python2/bin/ipython profile create --parallel --profile=mpi
+# RUN /opt/conda/envs/python2/bin/ipython profile create --parallel --profile=default
 
 USER root
 # Create a global kernelspec in the image and modify it so that it properly activates
 # the python2 conda environment.
-RUN $CONDA_DIR/envs/python2/bin/python -m ipykernel install && \
-$CONDA_DIR/envs/python2/bin/kernda -o -y /usr/local/share/jupyter/kernels/python2/kernel.json
+# RUN $CONDA_DIR/envs/python2/bin/python -m ipykernel install && \
+# $CONDA_DIR/envs/python2/bin/kernda -o -y /usr/local/share/jupyter/kernels/python2/kernel.json
 
 USER $NB_UID
 # Jupyterhub and memory monitoring
@@ -96,7 +94,7 @@ RUN pip install td-watson
 
 # HUGO
 USER root
-ENV HUGO_VER=0.52
+ENV HUGO_VER=0.53
 RUN wget https://github.com/gohugoio/hugo/releases/download/v${HUGO_VER}/hugo_${HUGO_VER}_Linux-64bit.deb
 RUN dpkg -i hugo*.deb
 RUN rm hugo*.deb 
@@ -106,4 +104,6 @@ USER jovyan
 RUN conda create --quiet --yes -n py3 python=3.6 pip ipython ipykernel kernda numpy ipywidgets
 RUN /opt/conda/envs/py3/bin/pip install vpython==7.4.0
 RUN /opt/conda/envs/py3/bin/python -m ipykernel install --user --name myenv --display-name "Python3.6"
-
+RUN echo "# config file" >> /home/jovyan/work/.bash_custom
+ARG JUPYTER_ENABLE_LAB
+ENV JUPYTER_ENABLE_LAB=$JUPYTER_ENABLE_LAB
