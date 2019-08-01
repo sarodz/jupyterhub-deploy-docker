@@ -22,8 +22,6 @@ RUN apt-get update && \
 RUN rm -rf /var/lib/apt/lists/*
 
 USER jovyan
-RUN conda update --all
-RUN conda install fenics
 
 # If you do not need parallelism, delete the following. 
 # RUN python3 -m pip install ipyparallel mpi4py
@@ -52,6 +50,10 @@ RUN python3 -m pip install --no-cache jupyterhub==$JUPYTERHUB_VERSION nbresuse &
     jupyter labextension install jupyterlab-system-monitor && \
     jupyter labextension install @jupyter-widgets/jupyterlab-manager && \ 
     jupyter labextension install @jupyterlab/git && \
+    python3 -m pip install voila && \
+    jupyter serverextension enable voila --sys-prefix && \
+    jupyter labextension install @jupyter-voila/jupyterlab-preview && \
+    jupyter labextension install jupyterlab-drawio && \
     python3 -m pip install --upgrade jupyterlab-git && \
     jupyter serverextension enable --py jupyterlab_git && \
     npm cache clean --force && \
