@@ -49,7 +49,7 @@ class MyDockerSpawner(DockerSpawner):
     def start(self):
         if self.user.name in self.group_map:
             group_list = self.group_map[self.user.name]
-            self.volumes['/home/jovyan/.jupyter/lab/user-settings/@jupyterlab'] = {'bind': 'jupyterlab_settings/'}
+            # self.volumes[os.path.join(pwd,'jupyterlab_settings')] = {'bind': '/home/jovyan/.jupyter/lab/user-settings/@jupyterlab'}
             #self.volumes['/tmp/.X11-unix'] = { 'bind': '/tmp/.X11-unix'}
             # add team volume to volumes
             if self.user.name == 'mathematicalmichael':
