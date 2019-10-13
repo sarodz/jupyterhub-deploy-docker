@@ -14,6 +14,7 @@ RUN apt-get update && \
     htop \
     fonts-dejavu \
     tzdata \
+    firefox \
     gfortran \
     gcc
 
@@ -50,6 +51,7 @@ RUN python3 -m pip install --no-cache jupyterhub==$JUPYTERHUB_VERSION nbresuse &
     jupyter labextension install jupyterlab-system-monitor && \
     jupyter labextension install @jupyter-widgets/jupyterlab-manager && \ 
     jupyter labextension install @jupyterlab/git && \
+    python3 -m pip install selenium && \
     python3 -m pip install voila && \
     jupyter serverextension enable voila --sys-prefix && \
     jupyter labextension install @jupyter-voila/jupyterlab-preview && \
@@ -85,7 +87,12 @@ USER root
 ENV HUGO_VER=0.53
 RUN wget https://github.com/gohugoio/hugo/releases/download/v${HUGO_VER}/hugo_${HUGO_VER}_Linux-64bit.deb
 RUN dpkg -i hugo*.deb
-RUN rm hugo*.deb 
+RUN rm hugo*.deb
+# geckodriver (control firefox for parsing data)
+RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.24.0/geckodriver-v0.24.0-linux64.tar.gz
+RUN tar -xvzf geckodriver*
+RUN chmod +x geckodriver && mv geckodriver /usr/sbin/
+RUN rm geckodriver*
 
 USER jovyan
 # Python 3.6 environment

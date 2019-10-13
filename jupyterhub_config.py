@@ -12,6 +12,15 @@ c.NotebookApp.nbserver_extensions = {
     'jupyterlab_git': True,
 } 
 
+#c.ServerProxy.servers = {
+#  'test-server': {
+#    'command': ['python3', '-m', 'http.server', '-d', '/home/jovyan/work/mathematicalmichael', '{port}'],
+#    'absolute_url': False
+#    'launcher_entry': {'enabled': True, 
+#                       'title': "Test Server"}
+#  }
+#}
+
 # Spawner dropdown menu?
 enable_options=False
 c.NotebookApp.allow_remote_access = True
@@ -40,7 +49,8 @@ class MyDockerSpawner(DockerSpawner):
     def start(self):
         if self.user.name in self.group_map:
             group_list = self.group_map[self.user.name]
-            self.volumes['/tmp/.X11-unix'] = { 'bind': '/tmp/.X11-unix'}
+            self.volumes['/home/jovyan/.jupyter/lab/user-settings/@jupyterlab'] = {'bind': 'jupyterlab_settings/'}
+            #self.volumes['/tmp/.X11-unix'] = { 'bind': '/tmp/.X11-unix'}
             # add team volume to volumes
             if self.user.name == 'mathematicalmichael':
                 self.volumes['/var/www/mm/'] = {'bind': '/home/jovyan/mm', 'mode': 'rw' }
@@ -70,7 +80,7 @@ class MyDockerSpawner(DockerSpawner):
                         { 'bind': '/home/jovyan/userlist', 'mode': 'rw' }
                     self.volumes['%s/jupyterhub_config.py'%(os.environ['HUB_LOC'])] = \
                         { 'bind': '/home/jovyan/jupyterhub_config.py', 'mode': 'rw' }
-        #self.environment['JUPYTER_ENABLE_LAB'] = 'yes'
+        self.environment['JUPYTER_ENABLE_LAB'] = 'yes'
         #self.volumes["/tmp/.X11-unix"] = {'bind': '/tmp/.X11-unix', 'mode': 'rw'}
         #self.volumes["/home/pilosovm/.Xauthority"] = {'bind': '/root/.Xauthority', 'mode': 'rw'}
         #self.volumes['/home/mathematicalmichael/.Xauthority'] = { 'bind': '/root/.Xauthority', 'mode': 'rw'}
@@ -108,7 +118,7 @@ c.DockerSpawner.extra_host_config = {
 
 # Memory limit
 c.Spawner.mem_limit = '42G'  # RAM limit
-c.Spawner.mem_limit = '1250M'  # RAM limit
+c.Spawner.mem_limit = '2500M'  # RAM limit
 #c.Spawner.cpu_limit = 0.1
 
 # Connect containers to this Docker network
@@ -216,8 +226,8 @@ c.JupyterHub.db_url = 'postgresql://postgres:{password}@{host}/{db}'.format(
 c.JupyterHub.admin_access = True
 
 ## Allow named single-user servers per user
-c.JupyterHub.allow_named_servers = False
-
+c.JupyterHub.allow_named_servers = True
+c.DockerSpawner.name_template = "{prefix}-{username}-{imagename}-{servername}"
 # Run script to automatically stop idle single-user servers as a jupyterhub service.
 #c.JupyterHub.services = [
 #    {
