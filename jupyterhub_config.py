@@ -12,6 +12,7 @@ c.NotebookApp.nbserver_extensions = {
     'jupyterlab_git': True,
 } 
 
+
 #c.ServerProxy.servers = {
 #  'test-server': {
 #    'command': ['python3', '-m', 'http.server', '-d', '/home/jovyan/work/mathematicalmichael', '{port}'],
@@ -95,7 +96,7 @@ c.JupyterHub.spawner_class = MyDockerSpawner
 # Spawn containers from this image (or a whitelist)
 #c.DockerSpawner.image = "jupyter/datascience-notebook:7254cdcfa22b"
 c.DockerSpawner.image = '%s-user'%hub_name
-c.DockerSpawner.name_template = '{imagename}-{username}'
+
 if enable_options:
     # if whitelist enabled, the .container_image will be ignored in favor of the options below:
     c.DockerSpawner.image_whitelist = {'default': c.DockerSpawner.image , 
@@ -118,8 +119,8 @@ c.DockerSpawner.extra_host_config = {
 #c.Spawner.cmd = ['jupyter-labhub']
 
 # Memory limit
-c.Spawner.mem_limit = '42G'  # RAM limit
-c.Spawner.mem_limit = '2500M'  # RAM limit
+c.Spawner.mem_limit = '100G'  # RAM limit
+
 #c.Spawner.cpu_limit = 0.1
 
 # Connect containers to this Docker network
@@ -143,6 +144,7 @@ c.DockerSpawner.volumes = { 'hub-user-{username}': notebook_dir }
 
 # volume_driver is no longer a keyword argument to create_container()
 # c.DockerSpawner.extra_create_kwargs.update({ 'volume_driver': 'local' })
+
 # Remove containers once they are stopped
 c.DockerSpawner.remove_containers = True
 
@@ -228,7 +230,8 @@ c.JupyterHub.admin_access = True
 
 ## Allow named single-user servers per user
 c.JupyterHub.allow_named_servers = True
-c.DockerSpawner.name_template = "{prefix}-{username}-{imagename}-{servername}"
+c.DockerSpawner.name_template = "{prefix}-{imagename}-{username}-{servername}"
+
 # Run script to automatically stop idle single-user servers as a jupyterhub service.
 #c.JupyterHub.services = [
 #    {
