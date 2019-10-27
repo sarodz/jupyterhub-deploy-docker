@@ -28,3 +28,6 @@ RUN pip install jupyterhub-hashauthenticator dockerspawner
 #COPY ./userlist /srv/jupyterhub/userlist
 # Download script to automatically stop idle single-user servers
 RUN wget https://raw.githubusercontent.com/jupyterhub/jupyterhub/1.0.0/examples/cull-idle/cull_idle_servers.py
+ADD images/logo.png /srv/jupyterhub/logo.png
+ARG DOCKER_NOTEBOOK_DIR
+ENV DOCKER_NOTEBOOK_DIR=$DOCKER_NOTEBOOK_DIR

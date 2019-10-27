@@ -12,6 +12,16 @@ c.NotebookApp.nbserver_extensions = {
     'jupyterlab_git': True,
 } 
 
+
+#c.ServerProxy.servers = {
+#  'test-server': {
+#    'command': ['python3', '-m', 'http.server', '-d', '/home/jovyan/work/mathematicalmichael', '{port}'],
+#    'absolute_url': False
+#    'launcher_entry': {'enabled': True, 
+#                       'title': "Test Server"}
+#  }
+#}
+
 # Spawner dropdown menu?
 enable_options=False
 c.NotebookApp.allow_remote_access = True
@@ -40,7 +50,23 @@ class MyDockerSpawner(DockerSpawner):
     def start(self):
         if self.user.name in self.group_map:
             group_list = self.group_map[self.user.name]
+            self.volumes['%s/jupyterlab_settings'%(os.environ['HUB_LOC'])] = \
+                    {'bind': '/home/jovyan/.jupyter/lab/user-settings/@jupyterlab'}
+            #self.volumes['/tmp/.X11-unix'] = { 'bind': '/tmp/.X11-unix'}
             # add team volume to volumes
+            if self.user.name == 'mathematicalmichael':
+                self.volumes['/var/www/mm/'] = {'bind': '/home/jovyan/mm', 'mode': 'rw' }
+                self.volumes['/var/www/mp/'] = {'bind': '/home/jovyan/mp', 'mode': 'rw' }
+                self.volumes['/var/www/biz/'] = {'bind': '/home/jovyan/biz', 'mode': 'rw' }
+                self.volumes['/var/www/dev/'] = {'bind': '/home/jovyan/dev', 'mode': 'rw' }
+            if self.user.name == 'elliottregan':
+                self.volumes['/var/www/dev/'] = {'bind': '/home/jovyan/dev', 'mode': 'rw' }
+                
+            if self.user.name == 'kellyhodges':
+                self.default_url = "notebooks/kelly/arrow.ipynb"        
+            if self.user.name == 'ronbailie':
+                self.volumes['/var/www/ron/'] = {'bind': '/home/jovyan/ron', 'mode': 'rw' }
+            
             for group_id in group_list: # admins in userlist get to write files.
                 if group_id != 'admin':
                     if 'admin' in group_list: 
@@ -50,13 +76,17 @@ class MyDockerSpawner(DockerSpawner):
                     else: # this "shared-" is part of the naming convention
                         self.volumes['shared-{}'.format(group_id)] = \
                             {'bind': '/home/jovyan/%s'%(group_id),
-                                'mode': 'ro' } # or rw for write (can cause conflicts)
+                                'mode': 'rw' } # or rw for write (can cause conflicts)
                 else: # if admin is one of the groups in userlist, mount the following:
                     self.volumes['%s/userlist'%(os.environ['HUB_LOC'])] = \
                         { 'bind': '/home/jovyan/userlist', 'mode': 'rw' }
                     self.volumes['%s/jupyterhub_config.py'%(os.environ['HUB_LOC'])] = \
                         { 'bind': '/home/jovyan/jupyterhub_config.py', 'mode': 'rw' }
         self.environment['JUPYTER_ENABLE_LAB'] = 'yes'
+        #self.volumes["/tmp/.X11-unix"] = {'bind': '/tmp/.X11-unix', 'mode': 'rw'}
+        #self.volumes["/home/pilosovm/.Xauthority"] = {'bind': '/root/.Xauthority', 'mode': 'rw'}
+        #self.volumes['/home/mathematicalmichael/.Xauthority'] = { 'bind': '/root/.Xauthority', 'mode': 'rw'}
+        
         return super().start()
 
 c.JupyterHub.spawner_class = MyDockerSpawner
@@ -66,7 +96,7 @@ c.JupyterHub.spawner_class = MyDockerSpawner
 # Spawn containers from this image (or a whitelist)
 #c.DockerSpawner.image = "jupyter/datascience-notebook:7254cdcfa22b"
 c.DockerSpawner.image = '%s-user'%hub_name
-c.DockerSpawner.name_template = '{imagename}-{username}'
+
 if enable_options:
     # if whitelist enabled, the .container_image will be ignored in favor of the options below:
     c.DockerSpawner.image_whitelist = {'default': c.DockerSpawner.image , 
@@ -83,11 +113,14 @@ c.DockerSpawner.extra_host_config = {
 # jupyter/docker-stacks *-notebook images as the Docker run command when
 # spawning containers.  Optionally, you can override the Docker run command
 # using the DOCKER_SPAWN_CMD environment variable.
-spawn_cmd = os.environ.get('DOCKER_SPAWN_CMD', "start-singleuser.sh")
-c.DockerSpawner.extra_create_kwargs.update({ 'command': spawn_cmd })
+#spawn_cmd = os.environ.get('DOCKER_SPAWN_CMD', "start-singleuser.sh")
+#c.DockerSpawner.extra_create_kwargs.update({ 'command': spawn_cmd })
+
+#c.Spawner.cmd = ['jupyter-labhub']
 
 # Memory limit
 c.Spawner.mem_limit = '100G'  # RAM limit
+
 #c.Spawner.cpu_limit = 0.1
 
 # Connect containers to this Docker network
@@ -103,25 +136,40 @@ c.DockerSpawner.extra_host_config = { 'network_mode': network_name }
 # We follow the same convention.
 notebook_dir = os.environ.get('DOCKER_NOTEBOOK_DIR') or '/home/jovyan/work'
 #c.DockerSpawner.notebook_dir = notebook_dir
+#notebook_dir = os.environ.get('DOCKER_NOTEBOOK_DIR') or '/home/jovyan/work'
 # Mount the real user's Docker volume on the host to the notebook user's
 # notebook directory in the container
+
 c.DockerSpawner.volumes = { 'hub-user-{username}': notebook_dir }
 
 # volume_driver is no longer a keyword argument to create_container()
 # c.DockerSpawner.extra_create_kwargs.update({ 'volume_driver': 'local' })
 
-
 # Remove containers once they are stopped
 c.DockerSpawner.remove_containers = True
+
 # For debugging arguments passed to spawned containers
 c.DockerSpawner.debug = True
-
 
 # User containers will access hub by container name on the Docker network
 c.JupyterHub.hub_ip = hub_name
 # The hub will be hosted at example.com/HUB_NAME/ 
-c.JupyterHub.base_url = u'/%s/'%hub_name
+#c.JupyterHub.base_url = u'/%s/'%hub_name
 #c.JupyterHub.hub_port = 8001
+
+## The URL the single-user server should start in.
+#
+#  `{username}` will be expanded to the user's username
+#
+#  Example uses:
+#
+#  - You can set `notebook_dir` to `/` and `default_url` to `/tree/home/{username}` to allow people to
+#    navigate the whole filesystem from their notebook server, but still start in their home directory.
+#  - Start with `/notebooks` instead of `/tree` if `default_url` points to a notebook instead of a directory.
+#  - You can set this to `/lab` to have JupyterLab start by default, rather than Jupyter Notebook.
+#c.Spawner.default_url = '/user/{username}/tree'
+#c.Spawner.default_url = '/notebooks/examples/Untitled.ipynb'
+
 
 ## Authentication 
 # Whitlelist users and admins
@@ -145,19 +193,19 @@ with open(os.path.join(pwd, 'userlist')) as f:
 
 
 # Authenticate users with GitHub OAuth
-# c.JupyterHub.authenticator_class = 'oauthenticator.GitHubOAuthenticator'
-# c.GitHubOAuthenticator.oauth_callback_url = os.environ['OAUTH_CALLBACK_URL']
+c.JupyterHub.authenticator_class = 'oauthenticator.GitHubOAuthenticator'
+c.GitHubOAuthenticator.oauth_callback_url = os.environ['OAUTH_CALLBACK_URL']
 
 # Authenticate with thedataincubator/jupyterhub-hashauthenticator
-c.JupyterHub.authenticator_class = 'hashauthenticator.HashAuthenticator'
+##c.JupyterHub.authenticator_class = 'hashauthenticator.HashAuthenticator'
 # You can generate a good "secret key" by running `openssl rand -hex 32` in terminal.
 # it is recommended to do this from time-to-time to change passwords (including changing their length)
-c.HashAuthenticator.secret_key = os.environ['HASH_SECRET_KEY']  # Defaults to ''
-c.HashAuthenticator.password_length = int(os.environ['PASSWORD_LENGTH'])          # Defaults to 6
+##c.HashAuthenticator.secret_key = os.environ['HASH_SECRET_KEY']  # Defaults to ''
+##c.HashAuthenticator.password_length = int(os.environ['PASSWORD_LENGTH'])          # Defaults to 6
 # Can find your password by looking at `hashauthpw --length 10 [username] [key]`
 # If the `show_logins` option is set to `True`, a CSV file containing 
 #login names and passwords will be served (to admins only) at `/hub/login_list`. 
-c.HashAuthenticator.show_logins = True            # Optional, defaults to False
+##c.HashAuthenticator.show_logins = True            # Optional, defaults to False
 
 # TLS config
 #c.JupyterHub.port = 8000
@@ -182,6 +230,7 @@ c.JupyterHub.admin_access = True
 
 ## Allow named single-user servers per user
 c.JupyterHub.allow_named_servers = True
+c.DockerSpawner.name_template = "{prefix}-{imagename}-{username}-{servername}"
 
 # Run script to automatically stop idle single-user servers as a jupyterhub service.
 #c.JupyterHub.services = [

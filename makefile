@@ -2,6 +2,8 @@
 # Distributed under the terms of the Modified BSD License.
 
 include .env
+## the line below should only be commented out if you want to use `make login` AFTER the jupyterhub has been built.
+include secrets/oauth.env
 
 .DEFAULT_GOAL=build
 
@@ -35,7 +37,6 @@ userlist:
 	@echo "Add usernames, one per line, to ./userlist, such as:"
 	@echo "    zoe admin"
 	@echo "    wash"
-	@exit 1
 
 # Do not require cert/key files if SECRETS_VOLUME defined
 #secrets_volume = $(shell echo $(SECRETS_VOLUME))
@@ -45,13 +46,14 @@ userlist:
 #	cert_files=
 #endif
 
-check-files: userlist secrets/postgres.env 
+check-files: userlist secrets/postgres.env secrets/oauth.env
 
 pull:
 	docker pull $(DOCKER_NOTEBOOK_IMAGE)
 
 notebook_image: pull singleuser/Dockerfile
 	docker build -t $(HUB_NAME)-user:latest \
+		--build-arg JUPYTER_ENABLE_LAB=$(JUPYTER_ENABLE_LAB) \
 		--build-arg JUPYTERHUB_VERSION=$(JUPYTERHUB_VERSION) \
 		--build-arg DOCKER_NOTEBOOK_IMAGE=$(DOCKER_NOTEBOOK_IMAGE) \
 		--build-arg DISPLAY=$(DISPLAY) \
